@@ -1,7 +1,8 @@
 import { Body, Controller, Get, Inject, Param, Post, Query } from '@nestjs/common';
-import { ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { SettingService } from 'src/setting/setting.service';
-import { SupportMemberDto } from './dto/support-member.dto';
+import { SupportLockdownDto } from './dto/support-lockdown.dto';
+import { SupportStatusDto } from './dto/support-status.dto';
 import { SupportService } from './support.service';
 
 @Controller('support')
@@ -29,5 +30,30 @@ export class SupportController {
     @Query('limit') limit = 20,
   ) {
     return await this.setting.getWebsiteList(search, system_status, withdraw_status, page, limit);
+  }
+
+  @ApiBody({
+    type: SupportStatusDto,
+  })
+  @ApiParam({ name: 'site_id', type: String, required: true })
+  @Post('site/:site_id/status/system')
+  async updateSystemStatus(@Body() model: SupportStatusDto, @Param('site_id') site_id: string) {
+    return await this.setting.setSystemStatus(site_id, model.status);
+  }
+  @ApiBody({
+    type: SupportStatusDto,
+  })
+  @ApiParam({ name: 'site_id', type: String, required: true })
+  @Post('site/:site_id/status/withdraw')
+  async updateWithdrawStatus(@Body() model: SupportStatusDto, @Param('site_id') site_id: string) {
+    return await this.setting.setWithdrawStatus(site_id, model.status);
+  }
+  @ApiBody({
+    type: SupportLockdownDto,
+  })
+  @ApiParam({ name: 'site_id', type: String, required: true })
+  @Post('site/:site_id/status/lockdown')
+  async updateLoackdown(@Body() model: SupportLockdownDto, @Param('site_id') site_id: string) {
+    return await this.setting.setLockdownStatus(site_id, model.status, model.operator);
   }
 }
