@@ -3,7 +3,7 @@ import { Injectable, Inject, CACHE_MANAGER, NotFoundException } from '@nestjs/co
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { lastValueFrom } from 'rxjs';
 import { MemberService } from 'src/member/member.service';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Cache } from 'cache-manager';
 import { Lockdowns } from 'src/entity/lockdowns.entity';
 import { UpdateLockdownDto } from './dto/update.lockdowns.dto';
@@ -81,6 +81,15 @@ export class SettingService {
       ` limit ${limit} offset ${page <= 1 ? 0 : (page - 1) * limit}`;
     const [{ count }] = await this.dataSource.query(`select count(*) from setting ` + condition);
     const data = await this.dataSource.query(query);
+    const lockdown = await this.lockdownsRepository.find({
+      where: {
+        company: In([...data.map((x) => x.company.toLowerCase())]),
+        agent: In([...data.map((x) => x.agent_username.toUpperCase())]),
+      },
+    });
+    data.map((x) => {
+      x.lockdown_status = lockdown.find((l) => l.company == x.company.toLowerCase() && x.agent_username.toUpperCase())?.status ?? false;
+    });
     return {
       data: data,
       total: Number(count),
