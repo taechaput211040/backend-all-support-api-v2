@@ -35,6 +35,16 @@ spec:
               value: fQxi85Ku96UPn2pNJLr9BBwK5gSZDBykcSDHWojWr5gV5MsySN
             - name: DB_NAME
               value: support_api
+            - name: DB_SUPPORT_V2_HOST
+              value: 10.148.15.212
+            - name: DB_SUPPORT_V2_PORT
+              value: '5432'
+            - name: DB_SUPPORT_V2_USER
+              value: realtech
+            - name: DB_SUPPORT_V2_PASSWORD
+              value: fQxi85Ku96UPn2pNJLr9BBwK5gSZDBykcSDHWojWr5gV5MsySN
+            - name: DB_SUPPORT_V2_NAME
+              value: all_support_v2
             - name: DB_SETTING_HOST
               value: 10.148.15.212
             - name: DB_SETTING_PORT
