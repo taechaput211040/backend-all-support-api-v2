@@ -4,6 +4,7 @@ import { SettingService } from 'src/setting/setting.service';
 import { SupportLockdownDto } from './dto/support-lockdown.dto';
 import { SupportStatusDto } from './dto/support-status.dto';
 import { SupportService } from './support.service';
+import { Admin } from 'src/auth/auth.public';
 @ApiBearerAuth()
 @Controller('support')
 export class SupportController {
@@ -15,7 +16,7 @@ export class SupportController {
   async getCreditHistory(@Param('username') username: string, @Query('page') page = 1, @Query('limit') limit = 20) {
     return await this.support.getCreditHistory(username, page, limit);
   }
-
+  @Admin()
   @ApiQuery({ name: 'page', type: Number, required: false })
   @ApiQuery({ name: 'limit', type: Number, required: false })
   @ApiQuery({ name: 'search', type: String, required: false })

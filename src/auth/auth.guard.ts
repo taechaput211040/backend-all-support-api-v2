@@ -25,9 +25,15 @@ export class AuthGuard implements CanActivate {
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request['user'] = payload;
+      const isAdmin = this.reflector.getAllAndOverride<boolean>(IS_ADMIN_KEY, [context.getHandler(), context.getClass()]);
+      if (isAdmin === true) {
+        // 💡 See this condition
+        return payload.isAdmin;
+      }
     } catch {
       throw new UnauthorizedException();
     }
+
     return true;
   }
 
