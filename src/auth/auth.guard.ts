@@ -2,12 +2,13 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { IS_ADMIN_KEY, IS_PUBLIC_KEY } from './auth.public';
+import { IS_ADMIN_KEY, IS_PUBLIC_KEY, ROLES_KEY } from './auth.public';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService, private reflector: Reflector) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    console.log('Auth Guard');
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()]);
     if (isPublic) {
       // 💡 See this condition
@@ -25,11 +26,6 @@ export class AuthGuard implements CanActivate {
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request['user'] = payload;
-      const isAdmin = this.reflector.getAllAndOverride<boolean>(IS_ADMIN_KEY, [context.getHandler(), context.getClass()]);
-      if (isAdmin === true) {
-        // 💡 See this condition
-        return payload.isAdmin;
-      }
     } catch {
       throw new UnauthorizedException();
     }

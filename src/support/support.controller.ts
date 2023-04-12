@@ -4,8 +4,9 @@ import { SettingService } from 'src/setting/setting.service';
 import { SupportLockdownDto } from './dto/support-lockdown.dto';
 import { SupportStatusDto } from './dto/support-status.dto';
 import { SupportService } from './support.service';
-import { Admin } from 'src/auth/auth.public';
+import { Admin, Roles } from 'src/auth/auth.public';
 @ApiBearerAuth()
+@Roles('admin:read')
 @Controller('support')
 export class SupportController {
   constructor(private support: SupportService, private setting: SettingService) {}
@@ -52,6 +53,7 @@ export class SupportController {
   @ApiBody({
     type: SupportLockdownDto,
   })
+  @Roles('admin:write')
   @ApiParam({ name: 'site_id', type: String, required: true })
   @Post('site/:site_id/status/lockdown')
   async updateLoackdown(@Body() model: SupportLockdownDto, @Param('site_id') site_id: string) {

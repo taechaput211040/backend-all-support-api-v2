@@ -12,6 +12,7 @@ export class AuthService {
   private saltRounds = 10;
 
   constructor(@InjectRepository(Users, 'support_v2') private userRepos: Repository<Users>, private jwtService: JwtService) {}
+
   async initUser() {
     const isExist = await this.userRepos.exist({
       where: { username: 'superadmin' },
@@ -33,7 +34,7 @@ export class AuthService {
     if (!match) {
       throw new UnauthorizedException({ message: 'Username or Password Incorrect' });
     }
-    const payload = { username: user.username, sub: user.id, isAdmin: user.isAdmin };
+    const payload = { username: user.username, sub: user.id, isAdmin: user.isAdmin, roles: ['admin:read', 'admin:write'] };
     return {
       access_token: await this.jwtService.signAsync(payload, {
         secret: process.env.AUTH_SECRET,

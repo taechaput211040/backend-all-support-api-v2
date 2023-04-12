@@ -173,14 +173,15 @@ export class SettingService {
   }
 
   async setSystemStatus(siteId: string, status: boolean): Promise<any> {
-    const [{ company, agent, system_status }] = await this.dataSource.query(
+    const [[{ company, agent, system_status }]] = await this.dataSource.query(
       'update setting set system_status = $1 where id =  $2 returning  company, agent_username as agent, system_status',
       [status, siteId],
     );
+    console.log({ company, agent, system_status });
     return { company, agent, system_status };
   }
   async setWithdrawStatus(siteId: string, status: boolean): Promise<any> {
-    const [{ company, agent, wd_status }] = await this.dataSource.query(
+    const [[{ company, agent, wd_status }]] = await this.dataSource.query(
       'update setting set wd_status = $1 where id =  $2 returning  company, agent_username as agent, wd_status',
       [status, siteId],
     );
