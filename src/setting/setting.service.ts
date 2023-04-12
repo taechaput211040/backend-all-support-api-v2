@@ -5,9 +5,9 @@ import { lastValueFrom } from 'rxjs';
 import { MemberService } from 'src/member/member.service';
 import { DataSource, In, Repository } from 'typeorm';
 import { Cache } from 'cache-manager';
-import { Lockdowns } from 'src/entity/lockdowns.entity';
+import { Lockdowns } from 'src/entity/v1/lockdowns.entity';
 import { UpdateLockdownDto } from './dto/update.lockdowns.dto';
-import { Notify } from 'src/entity/notify.entity';
+import { Notify } from 'src/entity/v1/notify.entity';
 import { AxiosResponse } from 'axios';
 
 @Injectable()

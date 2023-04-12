@@ -1,0 +1,93 @@
+image: docker:20
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375
+  IMAGE_TAG: ${CI_COMMIT_SHORT_SHA}
+
+stages:
+  # - test
+  - build
+  - deploy
+services:
+  - docker:20-dind
+
+# unit-test:
+#   stage: test
+#   image: node:16
+#   before_script:
+#     - npm install
+#   script:
+#     - echo "hello waiting test"
+
+build:
+  stage: build
+  # dependencies:
+    # - unit-test
+  artifacts:
+    paths:
+      - Dockerfile
+  before_script:
+    # $CI_JOB_TOKEN is variable automatically added by Gitlab: see https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#variables-reference
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY_IMAGE
+  script:
+    - docker pull $CI_REGISTRY_IMAGE || true # Allows us to use --cache-from
+    - docker build --rm --cache-from $CI_REGISTRY_IMAGE -t $CI_REGISTRY_IMAGE:$IMAGE_TAG .
+    - docker push $CI_REGISTRY_IMAGE:$IMAGE_TAG
+
+# deploy:
+#   stage: deploy
+#   image: google/cloud-sdk
+#   only:
+#     - development
+#     - develop
+#   dependencies:
+#     - build
+#   before_script:
+#     # Login to Gitlab registry
+#     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY_IMAGE
+#     # Login to Google Cloud Registry
+#     - LATEST_IMAGE_TAG="$(echo "$CI_BUILD_REF_NAME" | tr '/' '-')"
+#   script:
+#     - echo $GOOGLE_CLOUD_ACCOUNT | base64 -d  | docker login -u _json_key --password-stdin https://asia.gcr.io
+#     - docker pull $CI_REGISTRY_IMAGE:$IMAGE_TAG
+#     - echo $GCR_IMAGE:$IMAGE_TAG
+#     - docker tag $CI_REGISTRY_IMAGE:$IMAGE_TAG $GCR_IMAGE:$IMAGE_TAG
+#     - docker tag $CI_REGISTRY_IMAGE:$IMAGE_TAG $GCR_IMAGE:$LATEST_IMAGE_TAG
+#     - echo $GOOGLE_MANGER_DEPLOY > gcloud-service-key.json # Google Cloud service accounts
+#     - gcloud auth activate-service-account --key-file gcloud-service-key.json
+#     - gcloud config set project $GCP_PROJECT_ID
+#     - docker push $GCR_IMAGE:$IMAGE_TAG
+#     - docker push $GCR_IMAGE:$LATEST_IMAGE_TAG
+#     - IMAGE_SHA256=$(docker inspect --format='{{index .RepoDigests 0}}' $GCR_IMAGE:$IMAGE_TAG)
+#     - sed --expression "s|<IMAGE>|$IMAGE_SHA256|g" service-run.development.yaml > cloud-run.yaml
+#     - gcloud run services replace cloud-run.yaml
+
+deploy_to_production:
+  stage: deploy
+  image: google/cloud-sdk
+  when: manual
+  only:
+    - main
+  dependencies:
+    - build
+  before_script:
+    # Login to Gitlab registry
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY_IMAGE
+    # Login to Google Cloud Registry
+    - LATEST_IMAGE_TAG="$(echo "$CI_BUILD_REF_NAME" | tr '/' '-')"
+  script:
+    - echo $GOOGLE_CLOUD_ACCOUNT | base64 -d  | docker login -u _json_key --password-stdin https://asia.gcr.io
+    - docker pull $CI_REGISTRY_IMAGE:$IMAGE_TAG
+    - echo $GCR_IMAGE:$IMAGE_TAG
+    - docker tag $CI_REGISTRY_IMAGE:$IMAGE_TAG $GCR_IMAGE:$IMAGE_TAG
+    - docker tag $CI_REGISTRY_IMAGE:$IMAGE_TAG $GCR_IMAGE:$LATEST_IMAGE_TAG
+    - echo $GOOGLE_MANGER_DEPLOY > gcloud-service-key.json # Google Cloud service accounts
+    - gcloud auth activate-service-account --key-file gcloud-service-key.json
+    - gcloud config set project $GCP_PROJECT_ID
+    - docker push $GCR_IMAGE:$IMAGE_TAG
+    - docker push $GCR_IMAGE:$LATEST_IMAGE_TAG
+    - IMAGE_SHA256=$(docker inspect --format='{{index .RepoDigests 0}}' $GCR_IMAGE:$IMAGE_TAG)
+    - sed --expression "s|<IMAGE>|$IMAGE_SHA256|g" service-run.yaml > cloud-run.yaml
+    - gcloud run services replace cloud-run.yaml

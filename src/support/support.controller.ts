@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Inject, Param, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { SettingService } from 'src/setting/setting.service';
 import { SupportLockdownDto } from './dto/support-lockdown.dto';
 import { SupportStatusDto } from './dto/support-status.dto';
 import { SupportService } from './support.service';
-
+@ApiBearerAuth()
 @Controller('support')
 export class SupportController {
   constructor(private support: SupportService, private setting: SettingService) {}

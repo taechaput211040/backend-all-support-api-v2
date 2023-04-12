@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MemberModule } from 'src/member/member.module';
 import { SettingService } from './setting.service';
 import * as redisStore from 'cache-manager-redis-store';
-import { Lockdowns } from 'src/entity/lockdowns.entity';
+import { Lockdowns } from 'src/entity/v1/lockdowns.entity';
 
 @Module({
   imports: [
